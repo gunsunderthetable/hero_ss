@@ -1,0 +1,136 @@
+<?php
+class HeroSliderPage extends Page {
+
+    public static $db = array(
+    );
+
+    public static $has_many = array(
+        "HeroSlides" => "HeroSlide"
+    );  
+
+    public function getCMSFields() {
+      $fields = parent::getCMSFields();
+      
+        $gridFieldConfig = GridFieldConfig::create()->addComponents(
+          new GridFieldSortableRows('SortOrder'),                         
+          new GridFieldToolbarHeader(),
+          new GridFieldAddNewButton('toolbar-header-right'),
+          new GridFieldSortableHeader(),
+          new GridFieldDataColumns(),
+          new GridFieldPaginator(30),
+          new GridFieldEditButton(),
+          new GridFieldDeleteAction(),
+          new GridFieldDetailForm()
+        );
+
+        $gridField = new GridField("HeroSlides", "HeroSlides", $this->HeroSlides(), $gridFieldConfig);
+        $fields->addFieldToTab("Root.HeroSlides", $gridField);
+
+        return $fields;
+        
+    }
+
+    public function getMyHeroNavigation() {
+        if ($slides = HeroSlide::get()->filter(array('HeroSliderPageID' => $this->ID))->sort('SortOrder','ASC')) {
+          return $slides;
+        } 
+    }
+
+    public function getMyHeroSlides() {
+        if ($slides = HeroSlide::get()->filter(array('HeroSliderPageID' => $this->ID))->sort('SortOrder','ASC')) {
+        // var_dump($slides);
+        $records = "";
+        $records = '<ul class="cd-hero__slider">';
+        // echo count($slides);
+        $counter=0;
+        foreach ($slides as $slide) {
+                $counter++;
+
+                if ($counter==1) {
+                  $slideLiClass="cd-hero__slide cd-hero__slide--selected js-cd-slide";
+                } else {
+                  $slideLiClass="cd-hero__slide js-cd-slide";
+                }
+                // check for video file and add the necessary class to the <li> element...
+                // check for full width and add the necessary inline style to the <li> element...
+
+
+                $records .= '<li class="'.$slideLiClass.'"">';
+
+                $title=$slide->Title;
+                $description=$slide->Description;
+                $sortOrder=$slide->SortOrder;
+                $backgroundColour=$slide->BackgroundColour;
+                $imageURL=$slide->SlideImage()->URL;
+                $imageID=$slide->SlideImage()->ID;
+                $position=$slide->ImagePosition;
+
+                // sort out the width class for image and content divs
+
+
+                if ($position=='Left' || $position=='Right') {
+                    $widthClass='cd-hero__content--half-width';
+                } else {
+                    $widthClass='cd-hero__content--full-width';
+                }
+
+                if ($position=='Left' || $position=="Full"){
+                  // the image div comes first...
+                  if ($imageID) {
+                    $records .= '<div class="cd-hero__content '.$widthClass.' cd-hero__content--img">';
+                    $records .= '<img src ="'.$imageURL.'"alt ="'.$title.'"/>'; 
+                    $records .= '</div> <!-- .cd-hero__content -->';
+                  }
+                }
+
+                // build the content wrapper div...
+
+                $contentDivClass='cd-hero__content '.$widthClass;
+
+
+                $records .= '<div class="'.$contentDivClass.'"">';
+                $records .= '<h2>'.$title.'</h2>';
+                $records .= '<p>'.$description.'</p>';
+                $records .= '<a href="#0" class="cd-hero__btn">Bongo</a>';
+                $records .= '<a href="#0" class="cd-hero__btn cd-hero__btn--secondary">Bango</a>';
+
+                // <div class="cd-hero__content cd-hero__content--half-width">
+                //     
+                //     <p>The porter's burly</p>
+                //     <a href="#0" class="cd-hero__btn">Bongo</a>
+                //     <a href="#0" class="cd-hero__btn cd-hero__btn--secondary">Bango</a>
+                // </div> <!-- .cd-hero__content -->
+
+                $records .= '</div> <!-- .cd-hero__content -->'; // closes the content div...
+
+                if ($position=='Right'){
+                  if ($imageID) {
+                    // the image div comes last...
+                    $records .= '<div class="cd-hero__content '.$widthClass.' cd-hero__content--img">';
+                    $records .= '<img src ="'.$imageURL.'"alt ="'.$title.'"/>'; 
+                    $records .= '</div> <!-- .cd-hero__content -->';                    
+                  }
+
+                } 
+                
+                // $records .= "<h2>Counter is ".$counter." ".$title."</h2>";
+                // $records .= "<p>".$description."</p>";
+                // $records .= "<p> background colour is ".$backgroundColour."</p>";
+                // $records .= "<p>Sort order is ".$sortOrder."</p>";
+                // $records .= "<p>Position is ".$position."</p>";
+                // $records .= '<img src ="'.$imageURL.'"alt ="itsmaimage"/>'; 
+                $records .= "</li>";
+
+        }
+        $records .= "</ul>";
+        return $records;
+      } else {
+      
+      }
+    }
+
+}
+
+class HeroSliderPage_Controller extends Page_Controller {
+	
+}
